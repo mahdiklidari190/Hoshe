@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8">
+  <title>بازی دوز با ربات</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      direction: rtl;
+      margin: 0;
+      padding: 0;
+    }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      gap: 5px;
+      margin: 80px auto 20px;
+      width: 320px;
+    }
+    .cell {
+      width: 100px;
+      height: 100px;
+      background: #eee;
+      font-size: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .cell:hover {
+      background: #ddd;
+    }
+    #aiBtn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 10px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    #status {
+      font-size: 1.2rem;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <button id="aiBtn">بازی با ربات</button>
+  <div class="board" id="board"></div>
+  <div id="status"></div>
+
+  <script>
+    const board = document.getElementById("board");
+    const statusText = document.getElementById("status");
+    let cells = [];
+    let currentPlayer = "X";
+    let isAIEnabled = false;
+    let gameEnded = false;
+
+    function createBoard() {
+      board.innerHTML = "";
+      statusText.textContent = "";
+      cells = [];
+      gameEnded = false;
+      currentPlayer = "X";
+
+      for (let i = 0; i < 9; i++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.addEventListener("click", () => handleMove(i));
+        board.appendChild(cell);
+        cells.push(cell);
+      }
+    }
+
+    function handleMove(index) {
+      if (cells[index].textContent !== "" || gameEnded) return;
+      cells[index].textContent = currentPlayer;
+
+      if (checkWinner(currentPlayer)) {
+        statusText.textContent = `بازیکن ${currentPlayer} برنده شد!`;
+        gameEnded = true;
+        return;
+      }
+
+      if (isBoardFull()) {
+        statusText.textContent = "بازی مساوی شد!";
+        gameEnded = true;
+        return;
+      }
+
+      currentPlayer = currentPlayer === "X" ? "O" : "X";
+
+      if (isAIEnabled && currentPlayer === "O") {
+        setTimeout(aiMove, 500);
+      }
+    }
+
+    function aiMove() {
+      const emptyCells = cells
+        .map((cell, index) => cell.textContent === "" ? index : null)
+        .filter(i => i !== null);
+
+      if (emptyCells.length === 0) return;
+
+      const randomIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+      handleMove(randomIndex);
+    }
+
+    function checkWinner(player) {
+      const wins = [
+        [0,1,2],[3,4,5],[6,7,8],
+        [0,3,6],[1,4,7],[2,5,8],
+        [0,4,8],[2,4,6]
+      ];
+      return wins.some(combo =>
+        combo.every(i => cells[i].textContent === player)
+      );
+    }
+
+    function isBoardFull() {
+      return cells.every(cell => cell.textContent !== "");
+    }
+
+    document.getElementById("aiBtn").addEventListener("click", () => {
+      isAIEnabled = true;
+      alert("بازی با ربات فعال شد. با X شروع کن!");
+      createBoard();
+    });
+
+    // شروع اولیه بازی
+    createBoard();
+  </script>
+
+</body>
+</html>
